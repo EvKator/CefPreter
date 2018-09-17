@@ -9,6 +9,8 @@ namespace CefPreter
     class Expression
     {
         List<Function.Function> funcs;
+        List<Expression> expressions;
+
         
         public static Expression Parse(List<Token> tokens)
         {
@@ -25,10 +27,15 @@ namespace CefPreter
             this.funcs = funcs;
         }
 
+        public Expression(List<Expression> exs)
+        {
+            this.expressions = exs;
+        }
+
         public CefMemory RequiredMemory()
         {
             CefMemory Memory = new CefMemory();
-            foreach(var func in funcs)
+            foreach(var func in funcs.OrEmptyIfNull() )
                 Memory.Add(Types.Variable.Create(func.GetType().Name, ""));
             return Memory;
         }
@@ -39,7 +46,14 @@ namespace CefPreter
             Types.Variable result = null;
             ExpressionResult res = ExpressionResult.OK;
 
-            foreach(Function.Function func in funcs)
+            foreach(Expression ex in expressions.OrEmptyIfNull())
+            {
+                if (res == ExpressionResult.CondFalse)
+                    continue;
+                res = await ex.Execute(Browser, Memory);
+            }
+
+            foreach(Function.Function func in funcs.OrEmptyIfNull())
             {
 
                 func.Parameters = Memory.UnpackAllVariables(func.Parameters);
@@ -73,10 +87,14 @@ namespace CefPreter
 
     static class TokensListExtension
     {
+        public static IEnumerable<T> OrEmptyIfNull<T>(this IEnumerable<T> source)
+        {
+            return source ?? Enumerable.Empty<T>();
+        }
+
         public static Expression ToExpression(this List<Token> tokens)
         {
             List<Function.Function> funcs = new List<Function.Function>();
-
             //List<Token> Params = paramsList(tokens);
             for (int i = tokens.Count - 1; i >= 0; i--)
             {
@@ -87,7 +105,7 @@ namespace CefPreter
                     {
 
                         func.Parameters = (tokens.Eject(i + 1, func.ParamsCount));
-                        
+
                         funcs.Add(func);
                     }
                     catch (IndexOutOfRangeException)
@@ -99,6 +117,7 @@ namespace CefPreter
                         throw new WrongParamsCountException();
                     }
                 }
+                
             }
             return new Expression(funcs);
         }

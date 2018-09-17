@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace CefPreter
 {
-    class Parser////////////////Takes string of source code, parses it into the expressions list
+    class Parser
     {
         CefType stopToken;
         public Parser( CefType stopToken = CefType.EOF)
@@ -22,13 +22,26 @@ namespace CefPreter
             token.MoveNext();
             do
             {
-                /*if (token.Current.Type == CefType.UFunc)
+                if (token.Current.Type == CefType.Begin)
                 {
-                    Parser parser = new Parser(token, CefType.UFuncEnd);
-                    this.Expressions.Add(Expression.Parse(ExTokens));
-                    ExTokens.Clear();
+                    int i0 = tokens.IndexOf(token.Current);
+                    var nTokens = tokens.GetRange(i0 + 1, tokens.FindLastIndex(t => t.Type == CefType.End) - i0 - 1);
+                    var expressions = Parser.ParseExpressions(nTokens, CefType.End);
+                    Expressions.Add(new Expression(expressions));
+                    try
+                    {
+
+                        tokens = tokens.GetRange(tokens.FindLastIndex(t => t.Type == CefType.End) + 1, tokens.Count - tokens.FindLastIndex(t => t.Type == CefType.End) - 1);
+                        if (tokens.Count == 0)
+                            break;
+                        token = tokens.GetEnumerator();
+                    }
+                    catch
+                    {
+                        break;
+                    }
                 }
-                else*/ if (token.Current.Type == CefType.Semicolon)
+                else if (token.Current.Type == CefType.Semicolon)
                 {
                     Expressions.Add(Expression.Parse(ExTokens));
                     ExTokens.Clear();
@@ -37,8 +50,14 @@ namespace CefPreter
                 {
                     ExTokens.Add(token.Current);
                 }
-            } while (token.Current.Type != stopToken && token.MoveNext());
+            } while (token.MoveNext());
             return Expressions;
+        }
+
+        public static List<Expression> ParseExpressions(List<Token> tokens, CefType stopToken)
+        {
+            Parser parser = new Parser(stopToken);
+            return parser.ParseExpressions(tokens);
         }
 
 

@@ -30,6 +30,10 @@ namespace CefPreter
                         return CefType.String;
                     else if (Name == CefType.Number.ToString())
                         return CefType.Number;
+                    else if (Name == CefType.Begin.ToString())
+                        return CefType.Begin;
+                    else if (Name == CefType.End.ToString())
+                        return CefType.End;
                     else if (IsFunction(Name))
                         return CefType.Function;
                         ////OBLIGATORILY LAST!!!

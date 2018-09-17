@@ -89,15 +89,8 @@ namespace CefPreter
                     {
                         exres = ExpressionResult.OK;
                     }
-                    else if (exres == ExpressionResult.CondTrue)
-                    {
-                        Memory.Update(Expressions[i].RequiredMemory());
-                        exres = await Expressions[i].Execute(Browser, Memory);
-                        i++;
-                    }
                     else
                     {
-
                         Memory.Update(Expressions[i].RequiredMemory());
                         exres = await Expressions[i].Execute(Browser, Memory);//expression writes variables to the memory!!
                                                                               //memoryScope.Update(expression.Memory);//updates all values
@@ -121,7 +114,7 @@ namespace CefPreter
         public void Log()
         {
             string str = "";
-            try { str = ((global::CefPreter.Types.String)Memory.Get("Print")).Value; }
+            try { str += ((global::CefPreter.Types.String)Memory.Get("Print")).Value; }
             catch {
                 //vse norm, tak tozhe mozhna, reli
             }
@@ -204,5 +197,8 @@ namespace CefPreter
     {
 
     }
+
+
+
 
 }

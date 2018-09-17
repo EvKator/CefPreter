@@ -29,7 +29,7 @@ namespace CefPreter
         {
             List<string> sTokens = code.Split(' ').ToList();
             List<Token> tokens = new List<Token>();
-            bool EofFound = false;
+            //bool EofFound = false;
             foreach (var sToken in sTokens)
             {
                 string stok = sToken;
@@ -44,14 +44,14 @@ namespace CefPreter
                 if (token != null)
                 {
                     tokens.Add(token);
-                    if (token.Type == CefType.EOF)
-                        EofFound = true;
+                    //if (token.Type == CefType.EOF)
+                    //    EofFound = true;
                 }
                     
                 
             }
-            if (!EofFound)
-                tokens.AddRange(new Token[] { new Token("EOF"), new Token(" ; ")});
+            //if (!EofFound)
+            //    tokens.AddRange(new Token[] { new Token("EOF"), new Token(" ; ")});
             return tokens;
         }
         

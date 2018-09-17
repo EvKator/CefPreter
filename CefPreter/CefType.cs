@@ -17,8 +17,8 @@ namespace CefPreter
         NumberLiteral,
         Variable,
         
-        UFunc,
-        UFuncEnd,
+        Begin,
+        End,
         Call,
         EOF,
 
