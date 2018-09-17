@@ -62,7 +62,11 @@ namespace CefPreter
         {
             if (!Contains(variable.Name)) Add(variable);
             int i = GetVariableIndex(variable.Name);
-
+            if (variable.Type == CefType.String)
+                variables[i] = (Types.String)variable;
+            else if(variable.Type == CefType.Number)
+                variables[i] = (Types.Number)variable;
+            
             if (variables[i].Type == variable.Type)
             {
                 

@@ -102,7 +102,7 @@ namespace CefPreter
             return (string)res.Result;
         }
 
-        private async Task WaitForProcessing(int interval = 1000, int timeout = 15000)
+        private async Task WaitForProcessing(int interval = 1000, int timeout = 100000)
         {
             while (Processing && timeout >= 0)
             {

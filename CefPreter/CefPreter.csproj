@@ -72,7 +72,7 @@
     <Reference Include="PresentationFramework" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AFunction.cs" />
+    <Compile Include="Function.cs" />
     <Compile Include="Browser.cs" />
     <Compile Include="CefMemory.cs" />
     <Compile Include="CefType.cs" />

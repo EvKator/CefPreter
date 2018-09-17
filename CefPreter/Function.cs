@@ -8,7 +8,7 @@ using System.Reflection;
 
 namespace CefPreter.Function
 {
-    abstract class aFunction
+    abstract class Function
     {
 
         private List<Token> _parameters;
@@ -28,7 +28,7 @@ namespace CefPreter.Function
                 {
                     for (int i = 0; i < value.Count; i++)
                     {
-                        if (IsFunction(value[i].Type))
+                        if (value[i].Type==CefType.Function)
                             value[i].Type = CefType.Variable;
                     }
                         
@@ -37,120 +37,29 @@ namespace CefPreter.Function
             }
         }
         public abstract int ParamsCount { get; protected set; }
-        public abstract CefType Type { get; protected set; }
 
-        public aFunction(List<Token> Parameters)
+        public Function(List<Token> Parameters)
         {
             if (ParamsCount != -1 && ParamsCount != Parameters.Count)
                 throw new Exception("Wrong params number");
             this.Parameters = Parameters;
         }
 
-        public aFunction(){}
+        public Function(){}
 
         public abstract Task<Types.Variable> Exec(Browser Browser);
-
-        public static bool IsFunction(CefType type)
+        
+        public static Function Create(Token funcToken)
         {
-            
-            switch (type)
-            {
-                case CefType.String:
-                case CefType.Print:
-                case CefType.ToStr:
-                case CefType.Navigate:
-                case CefType.Click:
-                case CefType.Enter:
-                case CefType.GoBack:
-                case CefType.GoForward:
-                case CefType.Reload:
-                case CefType.Wait:
-                case CefType.InnerHTML:
-                case CefType.WaitForElement:
-                    return true;
-                default:
-                    return false;
-            }
-        }
-
-        public static aFunction Create(Token funcToken)
-        {
-            aFunction func = null;
-            switch (funcToken.Type)
-            {
-                case CefType.String:
-                    func = new Function.String();
-                    break;
-
-                case CefType.Number:
-                    func = new Function.Number();
-                    break;
-
-                case CefType.Print:
-                    func = new Function.Print();
-                    break;
-
-                case CefType.ToStr:
-                    func = new Function.ToStr();
-                    break;
-
-                case CefType.Navigate:
-                    func = new Function.Navigate();
-                    break;
-
-                case CefType.Click:
-                    func = new Function.Click();
-                    break;
-
-                case CefType.Enter:
-                    func = new Function.Enter();
-                    break;
-
-                case CefType.GoBack:
-                    func = new Function.GoBack();
-                    break;
-
-                case CefType.GoForward:
-                    func = new Function.GoForward();
-                    break;
-
-                case CefType.Reload:
-                    func = new Function.Reload();
-                    break;
-
-                case CefType.Wait:
-                    func = new Function.Wait();
-                    break;
-
-
-                case CefType.InnerHTML:
-                    func = new Function.InnerHTML();
-                    break;
-
-                case CefType.WaitForElement:
-                    func = new Function.WaitForElement();
-                    break;
-
-                case CefType.If:
-                    func = new Function.WaitForElement();
-                    break;
-
-                default:
-                    throw new InvalidOperationException("Unknown function " + funcToken.Name);
-            }
-            return func;
+            Type type = System.Type.GetType("CefPreter.Function." + funcToken.Name);
+            object f = Activator.CreateInstance(type);
+            return f as Function;
         }
     }
 
-    class Print : aFunction
+    class Print : Function
     {
         public override int ParamsCount { get; protected set; } = -1;
-        public override CefType Type { get; protected set; }
-
-        public Print() : base()
-        {
-            this.Type = CefType.Print;
-        }
 
         public async override Task<Types.Variable> Exec(Browser Browser)
         {
@@ -163,19 +72,13 @@ namespace CefPreter.Function
                     throw new Exception("Can't convert " + parameter.Type + " to String");
             }
 
-            return Types.Variable.Create(this.Type.ToString(), message);
+            return Types.Variable.Create(this.GetType().Name, message);
         }
     }
 
-    class String : aFunction
+    class AString : Function
     {
         public override int ParamsCount { get; protected set; } = 2;
-        public override CefType Type { get; protected set; }
-
-        public String() : base()
-        {
-            this.Type = CefType.String;
-        }
 
         public async override Task<Types.Variable> Exec(Browser Browser)
         {
@@ -187,16 +90,9 @@ namespace CefPreter.Function
         }
     }
 
-    class Number : aFunction
+    class ANumber : Function
     {
         public override int ParamsCount { get; protected set; } = 2;
-        public override CefType Type { get; protected set; }
-
-        public Number() : base()
-        {
-            this.Type = CefType.Number;
-        }
-
         public async override Task<Types.Variable> Exec(Browser Browser)
         {
             
@@ -208,22 +104,15 @@ namespace CefPreter.Function
         }
     }
 
-    class ToStr : aFunction
+    class ToStr : Function
     {
         public override int ParamsCount { get; protected set; } = 1;
-        public override CefType Type { get; protected set; }
-
-        public ToStr() : base()
-        {
-            this.Type = CefType.ToStr;
-        }
-
 
         public async override Task<Types.Variable> Exec(Browser Browser)
         {
             Types.Variable result = null;
             if (Parameters[0].Type == CefType.NumberLiteral)
-                result = new Types.String(this.Type.ToString(), Parameters[0].ToString());
+                result = new Types.String(this.GetType().Name, Parameters[0].ToString());
             else
                 throw new Exception("Can't convert " + Parameters[0].Type.ToString() + " to String");
             
@@ -232,22 +121,14 @@ namespace CefPreter.Function
     }
 
 
-    class UserFunction : aFunction
+    class UserFunction : Function
     {
         public override int ParamsCount { get; protected set; } = 1;
-        public override CefType Type { get; protected set; }
-
-        public UserFunction() : base()
-        {
-            this.Type = CefType.ToStr;
-        }
-
-
         public async override Task<Types.Variable> Exec(Browser Browser)
         {
             Types.Variable result = null;
             if (Parameters[0].Type == CefType.StringLiteral)
-                result = new Types.String(this.Type.ToString(), Parameters[0].ToString());
+                result = new Types.String(this.GetType().Name, Parameters[0].ToString());
             else
                 throw new Exception("Can't convert " + Parameters[0].Type.ToString() + " to String");
 
@@ -257,22 +138,15 @@ namespace CefPreter.Function
 
 
 
-    class Call : aFunction
+    class Call : Function
     {
         public override int ParamsCount { get; protected set; } = 1;
-        public override CefType Type { get; protected set; }
-
-        public Call() : base()
-        {
-            this.Type = CefType.ToStr;
-        }
-
-
+        
         public async override Task<Types.Variable> Exec(Browser Browser)
         {
             Types.Variable result = null;
             if (Parameters[0].Type == CefType.StringLiteral)
-                result = new Types.String(this.Type.ToString(), Parameters[0].ToString());
+                result = new Types.String(this.GetType().Name, Parameters[0].ToString());
             else
                 throw new Exception("Can't convert " + Parameters[0].Type.ToString() + " to String");
             
@@ -282,16 +156,9 @@ namespace CefPreter.Function
 
 
 
-    class Navigate : aFunction
+    class Navigate : Function
     {
         public override int ParamsCount { get; protected set; } = 1;
-        public override CefType Type { get; protected set; }
-
-        public Navigate() : base()
-        {
-            this.Type = CefType.Navigate;
-        }
-
 
         public async override Task<Types.Variable> Exec(Browser Browser)
         {
@@ -300,7 +167,7 @@ namespace CefPreter.Function
                 url = Parameters[0].Name;
             else
                 throw new Exception("Can't convert " + Parameters[0].Type.ToString() + " to String");
-            var result = new Types.String(this.Type.ToString(), url);
+            var result = new Types.String(this.GetType().Name, url);
             await Browser.Navigate(url);//////////////////////////////////////////////////////////////////////////////
             
             return result;
@@ -308,17 +175,10 @@ namespace CefPreter.Function
     }
 
 
-    class Click : aFunction
+    class Click : Function
     {
         public override int ParamsCount { get; protected set; } = 1;
-        public override CefType Type { get; protected set; }
-
-        public Click() : base()
-        {
-            this.Type = CefType.Click;
-        }
-
-
+        
         public async override Task<Types.Variable> Exec(Browser Browser)
         {
             string url;
@@ -326,23 +186,16 @@ namespace CefPreter.Function
                 url = Parameters[0].Name;
             else
                 throw new Exception("Can't convert " + Parameters[0].Type.ToString() + " to String");
-            var result = new Types.String(this.Type.ToString(), url);
+            var result = new Types.String(this.GetType().Name, url);
             await Browser.Click(url);
             return result;
         }
     }
 
-    class Enter : aFunction
+    class Enter : Function
     {
         public override int ParamsCount { get; protected set; } = 2;
-        public override CefType Type { get; protected set; }
-
-        public Enter() : base()
-        {
-            this.Type = CefType.Enter;
-        }
-
-
+        
         public async override Task<Types.Variable> Exec(Browser Browser)
         {
             string xpath = "";
@@ -358,22 +211,15 @@ namespace CefPreter.Function
                 throw new Exception("Can't convert " + Parameters[1].Type.ToString() + " to String");
 
 
-            var result = new Types.String(this.Type.ToString(), xpath);
+            var result = new Types.String(this.GetType().Name , xpath);
             await Browser.Enter(xpath, text);
             return result;
         }
     }
 
-    class GoBack : aFunction
+    class GoBack : Function
     {
         public override int ParamsCount { get; protected set; } = 0;
-        public override CefType Type { get; protected set; }
-        public GoBack() : base()
-        {
-            this.Type = CefType.GoBack;
-        }
-
-
         public async override Task<Types.Variable> Exec(Browser Browser)
         {
             await Browser.GoBack();
@@ -381,16 +227,9 @@ namespace CefPreter.Function
         }
     }
 
-    class GoForward : aFunction
+    class GoForward : Function
     {
         public override int ParamsCount { get; protected set; } = 0;
-        public override CefType Type { get; protected set; }
-        public GoForward() : base()
-        {
-           
-            this.Type = CefType.GoForward;
-        }
-
 
         public async override Task<Types.Variable> Exec(Browser Browser)
         {
@@ -399,16 +238,9 @@ namespace CefPreter.Function
         }
     }
 
-    class Reload : aFunction
+    class Reload : Function
     {
         public override int ParamsCount { get; protected set; } = 0;
-        public override CefType Type { get; protected set; }
-
-        public Reload() : base()
-        {
-            this.Type = CefType.Reload;
-        }
-
 
         public async override Task<Types.Variable> Exec(Browser Browser)
         {
@@ -417,16 +249,9 @@ namespace CefPreter.Function
         }
     }
 
-    class Wait : aFunction
+    class Wait : Function
     {
         public override int ParamsCount { get; protected set; } = 1;
-        public override CefType Type { get; protected set; } = CefType.Wait;
-
-        public Wait() : base()
-        {
-            this.Type = CefType.Wait;
-        }
-
 
         public async override Task<Types.Variable> Exec(Browser Browser)
         {
@@ -442,16 +267,9 @@ namespace CefPreter.Function
         }
     }
 
-    class WaitForElement : aFunction
+    class WaitForElement : Function
     {
         public override int ParamsCount { get; protected set; } = 1;
-        public override CefType Type { get; protected set; } = CefType.WaitForElement;
-
-        public WaitForElement() : base()
-        {
-            this.Type = CefType.WaitForElement;
-        }
-
 
         public async override Task<Types.Variable> Exec(Browser Browser)
         {
@@ -469,53 +287,44 @@ namespace CefPreter.Function
         }
     }
 
-    class If : aFunction
+    class If : Function
     {
         public override int ParamsCount { get; protected set; } = 1;
-        public override CefType Type { get; protected set; }
-
-        public If() : base()
-        {
-            this.Type = CefType.If;
-        }
 
         public async override Task<Types.Variable> Exec(Browser Browser)
         {
             Types.Variable res = null;
-            if (Parameters[1].Type == CefType.NumberLiteral)
+            if (Parameters[0].Type == CefType.NumberLiteral)
             {
-                if (Convert.ToInt32(Parameters[1]) == 0)
-                    res = Types.Variable.Create(this.Type.ToString(), 0);
+                int parami = 0;
+                try
+                {
+                    parami = Convert.ToInt32(Parameters[0].Name);
+                }
+                catch { }
+                if (parami == 0)
+                    res = Types.Variable.Create(this.GetType().Name , 0);
                 else 
-                    res = res = Types.Variable.Create(this.Type.ToString(), 1);
+                    res = res = Types.Variable.Create(this.GetType().Name , 1);
             }
-            else if (Parameters[1].Type == CefType.String)
+            else if (Parameters[0].Type == CefType.StringLiteral)
             {
-                if (System.String.IsNullOrWhiteSpace(Parameters[1].ToString()))
-                    res = Types.Variable.Create(this.Type.ToString(), 0);
+                if (System.String.IsNullOrWhiteSpace(Parameters[0].ToString()))
+                    res = Types.Variable.Create(this.GetType().Name , 0);
                 else
-                    res = res = Types.Variable.Create(this.Type.ToString(), 1);
+                    res = res = Types.Variable.Create(this.GetType().Name , 1);
             }
             else
-                throw new Exception(Parameters[1].Name + " is not a number/string " + this.ToString());
-            
+                throw new Exception(Parameters[0].Name + " is not a number/string " + this.ToString());
 
             return res;
 
         }
     }
 
-    class InnerHTML : aFunction
+    class InnerHTML : Function
     {
         public override int ParamsCount { get; protected set; } = 1;
-
-        public override CefType Type { get; protected set; } = CefType.InnerHTML;
-
-        public InnerHTML() : base()
-        {
-            this.Type = CefType.InnerHTML;
-        }
-
 
         public async override Task<Types.Variable> Exec(Browser Browser)
         {
@@ -526,10 +335,9 @@ namespace CefPreter.Function
             else
                 throw new Exception("Can't convert " + Parameters[0].Type.ToString() + " to StringLiteral");
 
-            string res = await Browser.GetInnerHTML(xpath);//////////////////////////////////////////////////////////////////////////////
+            string res = await Browser.GetInnerHTML(xpath);
 
-
-            return Types.Variable.Create(this.Type.ToString(), res);
+            return Types.Variable.Create(this.GetType().Name, res);
         }
     }
 

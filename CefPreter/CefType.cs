@@ -16,25 +16,14 @@ namespace CefPreter
         StringLiteral,
         NumberLiteral,
         Variable,
-        Print,
-        ToStr,
-        Navigate,
-        Click,
-        Enter,
-        GoBack,
-        GoForward,
-        Reload,
-        Wait,
+        
         UFunc,
         UFuncEnd,
         Call,
         EOF,
 
         ///FunctionsTypes
-        
-        UFunction,
-        InnerHTML,
-        WaitForElement,
+        Function,
         If,
 
         ///Variable types

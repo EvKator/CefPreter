@@ -52,8 +52,26 @@ namespace CefPreter.Types
 
     }
 
+
+
     class String : Variable
     {
+
+        public static explicit operator Number(String var)
+        {
+            Number res = null;
+            try
+            {
+                if (var.Type == CefType.String)
+                    res = new Number(var.Name, Convert.ToInt32(var.Value));
+            }
+            catch
+            {
+                throw new InvalidCastException(var.Value + " is not valid number");
+            }
+            return res;
+        }
+
         public new string Value { get; set; }
         public String(string Name, string Value = "") : base(Name, CefType.String)
         {
@@ -72,6 +90,12 @@ namespace CefPreter.Types
 
     class Number : Variable
     {
+        public static explicit operator String(Number var)
+        {
+            String res = new String(var.Name, var.Value.ToString());
+            return res;
+        }
+
         public new int Value { get;set; }
         public Number(string Name, int Value = 0) : base(Name, CefType.Number)
         {

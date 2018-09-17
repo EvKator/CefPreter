@@ -76,16 +76,35 @@ namespace CefPreter
             Output = "";
             MemoryDump = "";
             Processed = false;
+            ExpressionResult exres = ExpressionResult.OK;
             try
             {
                 this.Analize();
                 Memory = new CefMemory();
-                foreach (var expression in Expressions)
+                for (var i = 0; i < Expressions.Count; i++)
                 {
+                    
                     if (Processed) return false;
-                    Memory.Update(expression.RequiredMemory());
-                    await expression.Execute(Browser, Memory);//expression writes variables to the memory!!
-                                                              //memoryScope.Update(expression.Memory);//updates all values
+                    if (exres == ExpressionResult.CondFalse)
+                    {
+                        exres = ExpressionResult.OK;
+                    }
+                    else if (exres == ExpressionResult.CondTrue)
+                    {
+                        Memory.Update(Expressions[i].RequiredMemory());
+                        exres = await Expressions[i].Execute(Browser, Memory);
+                        i++;
+                    }
+                    else
+                    {
+
+                        Memory.Update(Expressions[i].RequiredMemory());
+                        exres = await Expressions[i].Execute(Browser, Memory);//expression writes variables to the memory!!
+                                                                              //memoryScope.Update(expression.Memory);//updates all values
+                    }
+
+
+
                     Log();
                 }
             }
@@ -101,9 +120,14 @@ namespace CefPreter
 
         public void Log()
         {
-            string str = ((global::CefPreter.Types.String)Memory.Get("Print")).Value;
+            string str = "";
+            try { str = ((global::CefPreter.Types.String)Memory.Get("Print")).Value; }
+            catch {
+                //vse norm, tak tozhe mozhna, reli
+            }
             if (!String.IsNullOrWhiteSpace(str))
             {
+                
                 this.Output += "\r\n" + str;
                 Memory.Set(Types.Variable.Create("Print", ""));
             }
@@ -170,7 +194,13 @@ namespace CefPreter
             Stopped();
         }
     }
+
     class WrongParamsCountException : Exception
+    {
+
+    }
+
+    class UnknownFunction : Exception
     {
 
     }

@@ -8,19 +8,19 @@ namespace CefPreter
 {
     class Expression
     {
-        List<Function.aFunction> funcs;
+        List<Function.Function> funcs;
         
         public static Expression Parse(List<Token> tokens)
         {
-            GetType
-            if (!tokens[0].IsReserved())
+            
+            if (!tokens[0].IsReserved() && tokens[0].Type != CefType.Function)
                 throw new Exception("Unknown function " + tokens[0].Name);
 
             Expression expression = tokens.ToExpression();
             return expression;
         }
 
-        public Expression(List<Function.aFunction> funcs)
+        public Expression(List<Function.Function> funcs)
         {
             this.funcs = funcs;
         }
@@ -29,37 +29,45 @@ namespace CefPreter
         {
             CefMemory Memory = new CefMemory();
             foreach(var func in funcs)
-                Memory.Add(Types.Variable.Create(func.Type.ToString(), ""));
+                Memory.Add(Types.Variable.Create(func.GetType().Name, ""));
             return Memory;
         }
 
         
-        public async Task<int> Execute(Browser Browser, CefMemory Memory)
+        public async Task<ExpressionResult> Execute(Browser Browser, CefMemory Memory)
         {
             Types.Variable result = null;
-            bool hop = false;
-            foreach(Function.aFunction func in funcs)
+            ExpressionResult res = ExpressionResult.OK;
+
+            foreach(Function.Function func in funcs)
             {
-                if (hop)
-                    continue;
-                if (func.Type == CefType.If)
-                {
-                    if (((Types.Number)result).Value == 0)
-                    {
-                        continue;
-                    }
-                    else
-                        hop = true;
-                }
 
                 func.Parameters = Memory.UnpackAllVariables(func.Parameters);
                 result = await func.Exec(Browser);
-                
-                if(result != null)
+
+                if (func.GetType().Name == "If")
+                {
+                    if (((Types.Number)result).Value == 0)
+                    {
+                        res = ExpressionResult.CondFalse;
+                    }
+                    else
+                        res = ExpressionResult.CondTrue;
+                }
+
+                if (result != null)
                     Memory.Set(result);
             }
-            return 1;
+            return res;
         }
+    }
+
+    public enum ExpressionResult
+    {
+        OK,
+        Error,
+        CondTrue,
+        CondFalse
     }
 
 
@@ -67,14 +75,14 @@ namespace CefPreter
     {
         public static Expression ToExpression(this List<Token> tokens)
         {
-            List<Function.aFunction> funcs = new List<Function.aFunction>();
+            List<Function.Function> funcs = new List<Function.Function>();
 
             //List<Token> Params = paramsList(tokens);
             for (int i = tokens.Count - 1; i >= 0; i--)
             {
-                if (Function.aFunction.IsFunction(tokens[i].Type))
+                if (tokens[i].Type == CefType.Function /*Function.Function.IsFunction(tokens[i].Type)*/)//////////////////////////////////////////
                 {
-                    Function.aFunction func = Function.aFunction.Create(tokens[i]);
+                    Function.Function func = Function.Function.Create(tokens[i]);
                     try
                     {
 
