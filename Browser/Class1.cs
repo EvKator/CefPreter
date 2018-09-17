@@ -16,13 +16,13 @@ namespace CefPreter.Browser
         public Browser()
         {
             //Processing = true;
-            
+
         }
-        
+
 
         public async Task Navigate(string url)
         {
-            
+
             Processing = true;
             Chromium.Stop();
             Chromium.Address = url;
@@ -51,7 +51,7 @@ namespace CefPreter.Browser
         public async Task Enter(string xpath, string text)
         {
             await GetElementByXpath(xpath);
-            await Chromium.EvaluateScriptAsync("window.foundEl.value = \"" + text +"\"");
+            await Chromium.EvaluateScriptAsync("window.foundEl.value = \"" + text + "\"");
             await Chromium.EvaluateScriptAsync("(function(){var event = new Event(\"focus\");" +
                                         "window.foundEl.dispatchEvent(event); window.foundEl.focus(); window.foundEl.click(); })()");
         }
@@ -69,7 +69,7 @@ namespace CefPreter.Browser
             }
             if (timeout <= 0)
                 throw new Exception("WaitForElement timeout expired");
-            
+
         }
 
         public async Task Wait(int n)
@@ -94,11 +94,11 @@ namespace CefPreter.Browser
 
         public async Task<string> GetInnerHTML(string xpath)
         {
-           // await GetElementByXpath(xpath);;
+            // await GetElementByXpath(xpath);;
             //JavascriptResponse res = await browser.EvaluateScriptAsync("(function(){return window.innerHTML; })()");
-            
+
             JavascriptResponse res = await Chromium.EvaluateScriptAsync("(function(){return document.evaluate('" + xpath + "', document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null).snapshotItem(0).innerHTML; })();");
-            
+
             return (string)res.Result;
         }
 

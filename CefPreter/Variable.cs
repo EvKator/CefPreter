@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace CefPreter.Types
 {
-    abstract class Variable
+    public abstract class Variable
     {
         public string Name { get; private set; }
         public CefType Type { get; private set; }
@@ -54,7 +54,7 @@ namespace CefPreter.Types
 
 
 
-    class String : Variable
+    public class String : Variable
     {
 
         public static explicit operator Number(String var)
@@ -88,7 +88,7 @@ namespace CefPreter.Types
         }
     }
 
-    class Number : Variable
+    public class Number : Variable
     {
         public static explicit operator String(Number var)
         {
@@ -111,7 +111,7 @@ namespace CefPreter.Types
         }
     }
 
-    class UFunc : Variable
+    public class UFunc : Variable
     {
         public new int Value { get; set; }
         public UFunc(string Name, int Value = 0) : base(Name, CefType.Number)

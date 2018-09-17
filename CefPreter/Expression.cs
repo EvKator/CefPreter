@@ -41,22 +41,43 @@ namespace CefPreter
         }
 
         
-        public async Task<ExpressionResult> Execute(Browser Browser, CefMemory Memory, Action log = null)
+        public async Task<ExpressionResult> Execute(Browser.Browser Browser, CefMemory Memory, Interpreter.CallBackEventHandler ceh, Action log = null)
         {
             Types.Variable result = null;
             ExpressionResult res = ExpressionResult.OK;
+            bool While = false;
+            if(expressions!=null)
+                for(int i = 0; i < expressions.Count; i++)
+                {
+                    if (res == ExpressionResult.CondFalse)
+                        continue;
 
-            foreach(Expression ex in expressions.OrEmptyIfNull())
-            {
-                if (res == ExpressionResult.CondFalse)
-                    continue;
-                res = await ex.Execute(Browser, Memory, log);
-                
-            }
+                    else if (expressions[0].funcs[0].GetType().Name == "While")
+                    {
+                        if (await expressions[i].Execute(Browser, Memory, ceh, log) == ExpressionResult.WhileCondTrue)
+                        {
+                            i++;
+                            res = await expressions[i].Execute(Browser, Memory, ceh, log);
+                            i -= 2;
+                        }
+                        else
+                            i++;
+
+                    }
+
+                    else
+                    {
+                        res = await expressions[i].Execute(Browser, Memory, ceh, log);
+                    }
+
+                }
 
             foreach(Function.Function func in funcs.OrEmptyIfNull())
             {
-
+                if (func.GetType().Name == "CLBCK" && ceh != null)
+                {
+                    ceh(Memory);
+                }
                 func.Parameters = Memory.UnpackAllVariables(func.Parameters);
                 result = await func.Exec(Browser);
 
@@ -69,7 +90,16 @@ namespace CefPreter
                     else
                         res = ExpressionResult.CondTrue;
                 }
-                
+                else if (func.GetType().Name == "While")
+                {
+                    if (((Types.Number)result).Value == 1)
+                    {
+                        res = ExpressionResult.WhileCondTrue;
+                    }
+                }
+
+
+
 
                 if (result != null)
                     Memory.Set(result);
@@ -85,7 +115,8 @@ namespace CefPreter
         OK,
         Error,
         CondTrue,
-        CondFalse
+        CondFalse,
+        WhileCondTrue
     }
 
 

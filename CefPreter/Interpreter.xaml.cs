@@ -23,7 +23,7 @@ namespace CefPreter
     public partial class Interpreter : UserControl
     {
         List<Expression> Expressions;
-        Browser Browser { get; set; }
+        Browser.Browser Browser { get; set; }
 
         CefMemory Memory;
         public Interpreter()
@@ -37,7 +37,7 @@ namespace CefPreter
 
             InitializeComponent();
 
-            Browser = new Browser();
+            Browser = new Browser.Browser();
             Browser.Chromium = Chromium;
 
             Processed = true;
@@ -92,7 +92,7 @@ namespace CefPreter
                     else
                     {
                         Memory.Update(Expressions[i].RequiredMemory());
-                        exres = await Expressions[i].Execute(Browser, Memory, Log);//expression writes variables to the memory!!
+                        exres = await Expressions[i].Execute(Browser, Memory, Callback, Log);//expression writes variables to the memory!!
                                                                               //memoryScope.Update(expression.Memory);//updates all values
                     }
 
@@ -104,6 +104,8 @@ namespace CefPreter
             {
                 Output += ex.Message + " in " + ex.StackTrace;
             }
+
+            
 
             Completed();
             return true;
@@ -162,9 +164,12 @@ namespace CefPreter
 
         public delegate void InterpreterEventHandler();
 
+        public delegate void CallBackEventHandler(CefMemory memory);
+
         public event InterpreterEventHandler Completed;
         public event InterpreterEventHandler Stopped;
-        public event InterpreterEventHandler Callback;
+
+        public event CallBackEventHandler Callback;
 
 
 

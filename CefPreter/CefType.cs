@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace CefPreter
 {
-    enum CefType
+    public enum CefType
     {
         //TokenTypes
         Undefined,

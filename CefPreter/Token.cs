@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace CefPreter
 {
-    class Token////represents the class
+    public class Token////represents the class
     {
         public string Name { get; set; }
         public CefType _Type;

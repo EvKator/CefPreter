@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using CefPreter.Types;
 namespace CefPreter
 {
-    class CefMemory: ICollection<Types.Variable>, IEnumerable<Types.Variable>///////Cefpreper inner variables scope
+    public class CefMemory: ICollection<Types.Variable>, IEnumerable<Types.Variable>///////Cefpreper inner variables scope
     {
         List<Types.Variable> variables;
 

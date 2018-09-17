@@ -47,7 +47,7 @@ namespace CefPreter.Function
 
         public Function(){}
 
-        public abstract Task<Types.Variable> Exec(Browser Browser);
+        public abstract Task<Types.Variable> Exec(Browser.Browser Browser);
         
         public static Function Create(Token funcToken)
         {
@@ -61,7 +61,7 @@ namespace CefPreter.Function
     {
         public override int ParamsCount { get; protected set; } = -1;
 
-        public async override Task<Types.Variable> Exec(Browser Browser)
+        public async override Task<Types.Variable> Exec(Browser.Browser Browser)
         {
             string message = "";
             foreach (var parameter in Parameters)
@@ -80,7 +80,7 @@ namespace CefPreter.Function
     {
         public override int ParamsCount { get; protected set; } = 2;
 
-        public async override Task<Types.Variable> Exec(Browser Browser)
+        public async override Task<Types.Variable> Exec(Browser.Browser Browser)
         {
             if (!(Parameters[1].Type == CefType.StringLiteral))
                 throw new Exception(Parameters[1].Name + " is not a string " + this.ToString());
@@ -93,7 +93,7 @@ namespace CefPreter.Function
     class ANumber : Function
     {
         public override int ParamsCount { get; protected set; } = 2;
-        public async override Task<Types.Variable> Exec(Browser Browser)
+        public async override Task<Types.Variable> Exec(Browser.Browser Browser)
         {
             
             if (!Parameters[1].IsNumberLiteral())
@@ -108,7 +108,7 @@ namespace CefPreter.Function
     {
         public override int ParamsCount { get; protected set; } = 1;
 
-        public async override Task<Types.Variable> Exec(Browser Browser)
+        public async override Task<Types.Variable> Exec(Browser.Browser Browser)
         {
             Types.Variable result = null;
             if (Parameters[0].Type == CefType.NumberLiteral)
@@ -124,7 +124,7 @@ namespace CefPreter.Function
     class UserFunction : Function
     {
         public override int ParamsCount { get; protected set; } = 1;
-        public async override Task<Types.Variable> Exec(Browser Browser)
+        public async override Task<Types.Variable> Exec(Browser.Browser Browser)
         {
             Types.Variable result = null;
             if (Parameters[0].Type == CefType.StringLiteral)
@@ -142,7 +142,7 @@ namespace CefPreter.Function
     {
         public override int ParamsCount { get; protected set; } = 1;
         
-        public async override Task<Types.Variable> Exec(Browser Browser)
+        public async override Task<Types.Variable> Exec(Browser.Browser Browser)
         {
             Types.Variable result = null;
             if (Parameters[0].Type == CefType.StringLiteral)
@@ -160,7 +160,7 @@ namespace CefPreter.Function
     {
         public override int ParamsCount { get; protected set; } = 1;
 
-        public async override Task<Types.Variable> Exec(Browser Browser)
+        public async override Task<Types.Variable> Exec(Browser.Browser Browser)
         {
             string url;
             if (Parameters[0].Type == CefType.StringLiteral)
@@ -179,7 +179,7 @@ namespace CefPreter.Function
     {
         public override int ParamsCount { get; protected set; } = 1;
         
-        public async override Task<Types.Variable> Exec(Browser Browser)
+        public async override Task<Types.Variable> Exec(Browser.Browser Browser)
         {
             string url;
             if (Parameters[0].Type == CefType.StringLiteral)
@@ -196,7 +196,7 @@ namespace CefPreter.Function
     {
         public override int ParamsCount { get; protected set; } = 2;
         
-        public async override Task<Types.Variable> Exec(Browser Browser)
+        public async override Task<Types.Variable> Exec(Browser.Browser Browser)
         {
             string xpath = "";
             if (Parameters[0].Type == CefType.StringLiteral)
@@ -220,7 +220,7 @@ namespace CefPreter.Function
     class GoBack : Function
     {
         public override int ParamsCount { get; protected set; } = 0;
-        public async override Task<Types.Variable> Exec(Browser Browser)
+        public async override Task<Types.Variable> Exec(Browser.Browser Browser)
         {
             await Browser.GoBack();
             return null;
@@ -231,7 +231,7 @@ namespace CefPreter.Function
     {
         public override int ParamsCount { get; protected set; } = 0;
 
-        public async override Task<Types.Variable> Exec(Browser Browser)
+        public async override Task<Types.Variable> Exec(Browser.Browser Browser)
         {
             await Browser.GoForward();
             return null;
@@ -242,7 +242,7 @@ namespace CefPreter.Function
     {
         public override int ParamsCount { get; protected set; } = 0;
 
-        public async override Task<Types.Variable> Exec(Browser Browser)
+        public async override Task<Types.Variable> Exec(Browser.Browser Browser)
         {
             await Browser.Reload();//////////////////////////////////////////////////////////////////////////////
             return null;
@@ -253,7 +253,7 @@ namespace CefPreter.Function
     {
         public override int ParamsCount { get; protected set; } = 1;
 
-        public async override Task<Types.Variable> Exec(Browser Browser)
+        public async override Task<Types.Variable> Exec(Browser.Browser Browser)
         {
             int n = 1000;
 
@@ -271,7 +271,7 @@ namespace CefPreter.Function
     {
         public override int ParamsCount { get; protected set; } = 1;
 
-        public async override Task<Types.Variable> Exec(Browser Browser)
+        public async override Task<Types.Variable> Exec(Browser.Browser Browser)
         {
             int n = 1000;
 
@@ -291,7 +291,7 @@ namespace CefPreter.Function
     {
         public override int ParamsCount { get; protected set; } = 1;
 
-        public async override Task<Types.Variable> Exec(Browser Browser)
+        public async override Task<Types.Variable> Exec(Browser.Browser Browser)
         {
             Types.Variable res = null;
             if (Parameters[0].Type == CefType.NumberLiteral)
@@ -322,11 +322,47 @@ namespace CefPreter.Function
         }
     }
 
+    class While : Function
+    {
+        public override int ParamsCount { get; protected set; } = 1;
+
+        public async override Task<Types.Variable> Exec(Browser.Browser Browser)
+        {
+            Types.Variable res = null;
+            if (Parameters[0].Type == CefType.NumberLiteral)
+            {
+                int parami = 0;
+                try
+                {
+                    parami = Convert.ToInt32(Parameters[0].Name);
+                }
+                catch { }
+                if (parami == 0)
+                    res = Types.Variable.Create(this.GetType().Name, 0);
+                else
+                    res = res = Types.Variable.Create(this.GetType().Name, 1);
+            }
+            else if (Parameters[0].Type == CefType.StringLiteral)
+            {
+                if (System.String.IsNullOrWhiteSpace(Parameters[0].ToString()))
+                    res = Types.Variable.Create(this.GetType().Name, 0);
+                else
+                    res = res = Types.Variable.Create(this.GetType().Name, 1);
+            }
+            else
+                throw new Exception(Parameters[0].Name + " is not a number/string " + this.ToString());
+
+            return res;
+
+        }
+    }
+
+
     class InnerHTML : Function
     {
         public override int ParamsCount { get; protected set; } = 1;
 
-        public async override Task<Types.Variable> Exec(Browser Browser)
+        public async override Task<Types.Variable> Exec(Browser.Browser Browser)
         {
             string xpath = "";
 
@@ -338,6 +374,16 @@ namespace CefPreter.Function
             string res = await Browser.GetInnerHTML(xpath);
 
             return Types.Variable.Create(this.GetType().Name, res);
+        }
+    }
+
+    class CLBCK: Function
+    {
+        public override int ParamsCount { get; protected set; } = 0;
+
+        public async override Task<Types.Variable> Exec(Browser.Browser Browser)
+        {
+            return null;
         }
     }
 
