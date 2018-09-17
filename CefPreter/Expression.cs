@@ -41,7 +41,7 @@ namespace CefPreter
         }
 
         
-        public async Task<ExpressionResult> Execute(Browser Browser, CefMemory Memory)
+        public async Task<ExpressionResult> Execute(Browser Browser, CefMemory Memory, Action log = null)
         {
             Types.Variable result = null;
             ExpressionResult res = ExpressionResult.OK;
@@ -50,7 +50,8 @@ namespace CefPreter
             {
                 if (res == ExpressionResult.CondFalse)
                     continue;
-                res = await ex.Execute(Browser, Memory);
+                res = await ex.Execute(Browser, Memory, log);
+                
             }
 
             foreach(Function.Function func in funcs.OrEmptyIfNull())
@@ -68,9 +69,12 @@ namespace CefPreter
                     else
                         res = ExpressionResult.CondTrue;
                 }
+                
 
                 if (result != null)
                     Memory.Set(result);
+                if (log != null)
+                    log();
             }
             return res;
         }

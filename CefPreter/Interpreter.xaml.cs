@@ -92,13 +92,12 @@ namespace CefPreter
                     else
                     {
                         Memory.Update(Expressions[i].RequiredMemory());
-                        exres = await Expressions[i].Execute(Browser, Memory);//expression writes variables to the memory!!
+                        exres = await Expressions[i].Execute(Browser, Memory, Log);//expression writes variables to the memory!!
                                                                               //memoryScope.Update(expression.Memory);//updates all values
                     }
 
 
-
-                    Log();
+                    
                 }
             }
             catch (Exception ex)
