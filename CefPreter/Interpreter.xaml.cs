@@ -36,6 +36,8 @@ namespace CefPreter
             Cef.Initialize(settings);
 
             InitializeComponent();
+            //Type[] type = System.Type.GetTypes("CefPreter.Function." + Name);
+            
 
             Browser = new Browser.Browser();
             Browser.Chromium = Chromium;
@@ -192,15 +194,7 @@ namespace CefPreter
         }
     }
 
-    class WrongParamsCountException : Exception
-    {
-
-    }
-
-    class UnknownFunction : Exception
-    {
-
-    }
+    
 
 
 

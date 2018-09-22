@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Reflection;
+using CefPreter.Exceptions;
 namespace CefPreter
 {
     class Expression
@@ -45,7 +46,6 @@ namespace CefPreter
         {
             Types.Variable result = null;
             ExpressionResult res = ExpressionResult.OK;
-            bool While = false;
             if(expressions!=null)
                 for(int i = 0; i < expressions.Count; i++)
                 {

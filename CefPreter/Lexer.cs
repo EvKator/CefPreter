@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Text.RegularExpressions;
+using System.Reflection;
 
 namespace CefPreter
 {
@@ -14,6 +15,18 @@ namespace CefPreter
         public Lexer(string code)
         {
             string normalizedCode = NormalizeCode(code);
+            List<string> types = new List<string>();
+            foreach (var assemblyName in Assembly.GetExecutingAssembly().GetReferencedAssemblies())
+            {
+                Assembly assembly = Assembly.Load(assemblyName);
+                foreach (var type in assembly.GetTypes())
+                {
+                    if (type.Namespace == "CefPreter.Function")
+                        types.Add(type.Name);
+                }
+            }
+            
+            Token.AddKeyWords(types.ToArray());
             this.tokens = ParseTokens(normalizedCode);
         }
 

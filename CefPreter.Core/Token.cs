@@ -10,6 +10,13 @@ namespace CefPreter
     {
         public string Name { get; set; }
         public CefType _Type;
+        static string[] funcKeyWords;
+
+        public static void AddKeyWords(string[] keyWords)
+        {
+            funcKeyWords = keyWords;
+        }
+
         public CefType Type
         {
             get {
@@ -52,8 +59,9 @@ namespace CefPreter
 
         private bool IsFunction(string Name)
         {
-            Type type = System.Type.GetType("CefPreter.Function." + Name);
-            if (type != null)
+            if(funcKeyWords.Contains(Name))
+            //System.Reflection.Assembly funcs = System.Reflection.Assembly.Load("Function.dll");
+            
                 return true;
             else
                 return false;

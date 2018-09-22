@@ -4,13 +4,14 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using CefPreter;
+using CefPreter.Exceptions;
+using CefPreter.Browser;
 using System.Reflection;
 
 namespace CefPreter.Function
 {
-    abstract class Function
+    public abstract class Function
     {
-
         private List<Token> _parameters;
         public List<Token> Parameters
         {
@@ -22,16 +23,16 @@ namespace CefPreter.Function
             {
                 if (value.Count != this.ParamsCount && ParamsCount != -1)
                 {
-                    throw new WrongParamsCountException();
+                    throw new  WrongParamsCountException();
                 }
                 else
                 {
                     for (int i = 0; i < value.Count; i++)
                     {
-                        if (value[i].Type==CefType.Function)
+                        if (value[i].Type == CefType.Function)
                             value[i].Type = CefType.Variable;
                     }
-                        
+
                     this._parameters = value;
                 }
             }
@@ -45,10 +46,10 @@ namespace CefPreter.Function
             this.Parameters = Parameters;
         }
 
-        public Function(){}
+        public Function() { }
 
         public abstract Task<Types.Variable> Exec(Browser.Browser Browser);
-        
+
         public static Function Create(Token funcToken)
         {
             Type type = System.Type.GetType("CefPreter.Function." + funcToken.Name);
@@ -57,7 +58,7 @@ namespace CefPreter.Function
         }
     }
 
-    class Print : Function
+    public class Print : Function
     {
         public override int ParamsCount { get; protected set; } = -1;
 
@@ -76,7 +77,7 @@ namespace CefPreter.Function
         }
     }
 
-    class AString : Function
+    public class AString : Function
     {
         public override int ParamsCount { get; protected set; } = 2;
 
@@ -86,25 +87,25 @@ namespace CefPreter.Function
                 throw new Exception(Parameters[1].Name + " is not a string " + this.ToString());
 
             return Types.Variable.Create(Parameters[0].Name, Parameters[1].Name);
-            
+
         }
     }
 
-    class ANumber : Function
+    public class ANumber : Function
     {
         public override int ParamsCount { get; protected set; } = 2;
         public async override Task<Types.Variable> Exec(Browser.Browser Browser)
         {
-            
+
             if (!Parameters[1].IsNumberLiteral())
                 throw new Exception(Parameters[1].Name + " is not a number " + this.ToString());
 
             return Types.Variable.Create(Parameters[0].Name, Convert.ToInt32(Parameters[1].Name));
-            
+
         }
     }
 
-    class ToStr : Function
+    public class ToStr : Function
     {
         public override int ParamsCount { get; protected set; } = 1;
 
@@ -115,13 +116,13 @@ namespace CefPreter.Function
                 result = new Types.String(this.GetType().Name, Parameters[0].ToString());
             else
                 throw new Exception("Can't convert " + Parameters[0].Type.ToString() + " to String");
-            
+
             return result;
         }
     }
 
 
-    class UserFunction : Function
+    public class UserFunction : Function
     {
         public override int ParamsCount { get; protected set; } = 1;
         public async override Task<Types.Variable> Exec(Browser.Browser Browser)
@@ -138,10 +139,10 @@ namespace CefPreter.Function
 
 
 
-    class Call : Function
+    public class Call : Function
     {
         public override int ParamsCount { get; protected set; } = 1;
-        
+
         public async override Task<Types.Variable> Exec(Browser.Browser Browser)
         {
             Types.Variable result = null;
@@ -149,14 +150,14 @@ namespace CefPreter.Function
                 result = new Types.String(this.GetType().Name, Parameters[0].ToString());
             else
                 throw new Exception("Can't convert " + Parameters[0].Type.ToString() + " to String");
-            
+
             return result;
         }
     }
 
 
 
-    class Navigate : Function
+    public class Navigate : Function
     {
         public override int ParamsCount { get; protected set; } = 1;
 
@@ -169,16 +170,16 @@ namespace CefPreter.Function
                 throw new Exception("Can't convert " + Parameters[0].Type.ToString() + " to String");
             var result = new Types.String(this.GetType().Name, url);
             await Browser.Navigate(url);//////////////////////////////////////////////////////////////////////////////
-            
+
             return result;
         }
     }
 
 
-    class Click : Function
+    public class Click : Function
     {
         public override int ParamsCount { get; protected set; } = 1;
-        
+
         public async override Task<Types.Variable> Exec(Browser.Browser Browser)
         {
             string url;
@@ -192,10 +193,10 @@ namespace CefPreter.Function
         }
     }
 
-    class Enter : Function
+    public class Enter : Function
     {
         public override int ParamsCount { get; protected set; } = 2;
-        
+
         public async override Task<Types.Variable> Exec(Browser.Browser Browser)
         {
             string xpath = "";
@@ -211,13 +212,13 @@ namespace CefPreter.Function
                 throw new Exception("Can't convert " + Parameters[1].Type.ToString() + " to String");
 
 
-            var result = new Types.String(this.GetType().Name , xpath);
+            var result = new Types.String(this.GetType().Name, xpath);
             await Browser.Enter(xpath, text);
             return result;
         }
     }
 
-    class GoBack : Function
+    public class GoBack : Function
     {
         public override int ParamsCount { get; protected set; } = 0;
         public async override Task<Types.Variable> Exec(Browser.Browser Browser)
@@ -227,7 +228,7 @@ namespace CefPreter.Function
         }
     }
 
-    class GoForward : Function
+    public class GoForward : Function
     {
         public override int ParamsCount { get; protected set; } = 0;
 
@@ -238,7 +239,7 @@ namespace CefPreter.Function
         }
     }
 
-    class Reload : Function
+    public class Reload : Function
     {
         public override int ParamsCount { get; protected set; } = 0;
 
@@ -249,7 +250,7 @@ namespace CefPreter.Function
         }
     }
 
-    class Wait : Function
+    public class Wait : Function
     {
         public override int ParamsCount { get; protected set; } = 1;
 
@@ -267,7 +268,7 @@ namespace CefPreter.Function
         }
     }
 
-    class WaitForElement : Function
+    public class WaitForElement : Function
     {
         public override int ParamsCount { get; protected set; } = 1;
 
@@ -287,7 +288,7 @@ namespace CefPreter.Function
         }
     }
 
-    class If : Function
+    public class If : Function
     {
         public override int ParamsCount { get; protected set; } = 1;
 
@@ -303,16 +304,16 @@ namespace CefPreter.Function
                 }
                 catch { }
                 if (parami == 0)
-                    res = Types.Variable.Create(this.GetType().Name , 0);
-                else 
-                    res = res = Types.Variable.Create(this.GetType().Name , 1);
+                    res = Types.Variable.Create(this.GetType().Name, 0);
+                else
+                    res = res = Types.Variable.Create(this.GetType().Name, 1);
             }
             else if (Parameters[0].Type == CefType.StringLiteral)
             {
                 if (System.String.IsNullOrWhiteSpace(Parameters[0].ToString()))
-                    res = Types.Variable.Create(this.GetType().Name , 0);
+                    res = Types.Variable.Create(this.GetType().Name, 0);
                 else
-                    res = res = Types.Variable.Create(this.GetType().Name , 1);
+                    res = res = Types.Variable.Create(this.GetType().Name, 1);
             }
             else
                 throw new Exception(Parameters[0].Name + " is not a number/string " + this.ToString());
@@ -322,7 +323,7 @@ namespace CefPreter.Function
         }
     }
 
-    class While : Function
+    public class While : Function
     {
         public override int ParamsCount { get; protected set; } = 1;
 
@@ -358,7 +359,7 @@ namespace CefPreter.Function
     }
 
 
-    class InnerHTML : Function
+    public class InnerHTML : Function
     {
         public override int ParamsCount { get; protected set; } = 1;
 
@@ -377,7 +378,7 @@ namespace CefPreter.Function
         }
     }
 
-    class CLBCK: Function
+    public class CLBCK : Function
     {
         public override int ParamsCount { get; protected set; } = 0;
 
