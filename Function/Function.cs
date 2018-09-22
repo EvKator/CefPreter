@@ -7,62 +7,17 @@ using CefPreter;
 using CefPreter.Exceptions;
 using CefPreter.Browser;
 using System.Reflection;
+using CefPreter.Function;
 
 namespace CefPreter.Function
 {
-    public abstract class Function
-    {
-        private List<Token> _parameters;
-        public List<Token> Parameters
-        {
-            get
-            {
-                return _parameters;
-            }
-            set
-            {
-                if (value.Count != this.ParamsCount && ParamsCount != -1)
-                {
-                    throw new  WrongParamsCountException();
-                }
-                else
-                {
-                    for (int i = 0; i < value.Count; i++)
-                    {
-                        if (value[i].Type == CefType.Function)
-                            value[i].Type = CefType.Variable;
-                    }
-
-                    this._parameters = value;
-                }
-            }
-        }
-        public abstract int ParamsCount { get; protected set; }
-
-        public Function(List<Token> Parameters)
-        {
-            if (ParamsCount != -1 && ParamsCount != Parameters.Count)
-                throw new Exception("Wrong params number");
-            this.Parameters = Parameters;
-        }
-
-        public Function() { }
-
-        public abstract Task<Types.Variable> Exec(Browser.Browser Browser);
-
-        public static Function Create(Token funcToken)
-        {
-            Type type = System.Type.GetType("CefPreter.Function." + funcToken.Name);
-            object f = Activator.CreateInstance(type);
-            return f as Function;
-        }
-    }
+    
 
     public class Print : Function
     {
         public override int ParamsCount { get; protected set; } = -1;
 
-        public async override Task<Types.Variable> Exec(Browser.Browser Browser)
+        public async override Task<Types.Variable> Exec(CefPreter.IBrowser Browser)
         {
             string message = "";
             foreach (var parameter in Parameters)
@@ -81,7 +36,7 @@ namespace CefPreter.Function
     {
         public override int ParamsCount { get; protected set; } = 2;
 
-        public async override Task<Types.Variable> Exec(Browser.Browser Browser)
+        public async override Task<Types.Variable> Exec(CefPreter.IBrowser Browser)
         {
             if (!(Parameters[1].Type == CefType.StringLiteral))
                 throw new Exception(Parameters[1].Name + " is not a string " + this.ToString());
@@ -94,7 +49,7 @@ namespace CefPreter.Function
     public class ANumber : Function
     {
         public override int ParamsCount { get; protected set; } = 2;
-        public async override Task<Types.Variable> Exec(Browser.Browser Browser)
+        public async override Task<Types.Variable> Exec(CefPreter.IBrowser Browser)
         {
 
             if (!Parameters[1].IsNumberLiteral())
@@ -109,7 +64,7 @@ namespace CefPreter.Function
     {
         public override int ParamsCount { get; protected set; } = 1;
 
-        public async override Task<Types.Variable> Exec(Browser.Browser Browser)
+        public async override Task<Types.Variable> Exec(CefPreter.IBrowser Browser)
         {
             Types.Variable result = null;
             if (Parameters[0].Type == CefType.NumberLiteral)
@@ -125,7 +80,7 @@ namespace CefPreter.Function
     public class UserFunction : Function
     {
         public override int ParamsCount { get; protected set; } = 1;
-        public async override Task<Types.Variable> Exec(Browser.Browser Browser)
+        public async override Task<Types.Variable> Exec(CefPreter.IBrowser Browser)
         {
             Types.Variable result = null;
             if (Parameters[0].Type == CefType.StringLiteral)
@@ -143,7 +98,7 @@ namespace CefPreter.Function
     {
         public override int ParamsCount { get; protected set; } = 1;
 
-        public async override Task<Types.Variable> Exec(Browser.Browser Browser)
+        public async override Task<Types.Variable> Exec(CefPreter.IBrowser Browser)
         {
             Types.Variable result = null;
             if (Parameters[0].Type == CefType.StringLiteral)
@@ -161,7 +116,7 @@ namespace CefPreter.Function
     {
         public override int ParamsCount { get; protected set; } = 1;
 
-        public async override Task<Types.Variable> Exec(Browser.Browser Browser)
+        public async override Task<Types.Variable> Exec(CefPreter.IBrowser Browser)
         {
             string url;
             if (Parameters[0].Type == CefType.StringLiteral)
@@ -180,7 +135,7 @@ namespace CefPreter.Function
     {
         public override int ParamsCount { get; protected set; } = 1;
 
-        public async override Task<Types.Variable> Exec(Browser.Browser Browser)
+        public async override Task<Types.Variable> Exec(CefPreter.IBrowser Browser)
         {
             string url;
             if (Parameters[0].Type == CefType.StringLiteral)
@@ -197,7 +152,7 @@ namespace CefPreter.Function
     {
         public override int ParamsCount { get; protected set; } = 2;
 
-        public async override Task<Types.Variable> Exec(Browser.Browser Browser)
+        public async override Task<Types.Variable> Exec(CefPreter.IBrowser Browser)
         {
             string xpath = "";
             if (Parameters[0].Type == CefType.StringLiteral)
@@ -221,7 +176,7 @@ namespace CefPreter.Function
     public class GoBack : Function
     {
         public override int ParamsCount { get; protected set; } = 0;
-        public async override Task<Types.Variable> Exec(Browser.Browser Browser)
+        public async override Task<Types.Variable> Exec(CefPreter.IBrowser Browser)
         {
             await Browser.GoBack();
             return null;
@@ -232,7 +187,7 @@ namespace CefPreter.Function
     {
         public override int ParamsCount { get; protected set; } = 0;
 
-        public async override Task<Types.Variable> Exec(Browser.Browser Browser)
+        public async override Task<Types.Variable> Exec(CefPreter.IBrowser Browser)
         {
             await Browser.GoForward();
             return null;
@@ -243,7 +198,7 @@ namespace CefPreter.Function
     {
         public override int ParamsCount { get; protected set; } = 0;
 
-        public async override Task<Types.Variable> Exec(Browser.Browser Browser)
+        public async override Task<Types.Variable> Exec(CefPreter.IBrowser Browser)
         {
             await Browser.Reload();//////////////////////////////////////////////////////////////////////////////
             return null;
@@ -254,7 +209,7 @@ namespace CefPreter.Function
     {
         public override int ParamsCount { get; protected set; } = 1;
 
-        public async override Task<Types.Variable> Exec(Browser.Browser Browser)
+        public async override Task<Types.Variable> Exec(CefPreter.IBrowser Browser)
         {
             int n = 1000;
 
@@ -272,7 +227,7 @@ namespace CefPreter.Function
     {
         public override int ParamsCount { get; protected set; } = 1;
 
-        public async override Task<Types.Variable> Exec(Browser.Browser Browser)
+        public async override Task<Types.Variable> Exec(CefPreter.IBrowser Browser)
         {
             int n = 1000;
 
@@ -292,7 +247,7 @@ namespace CefPreter.Function
     {
         public override int ParamsCount { get; protected set; } = 1;
 
-        public async override Task<Types.Variable> Exec(Browser.Browser Browser)
+        public async override Task<Types.Variable> Exec(CefPreter.IBrowser Browser)
         {
             Types.Variable res = null;
             if (Parameters[0].Type == CefType.NumberLiteral)
@@ -327,7 +282,7 @@ namespace CefPreter.Function
     {
         public override int ParamsCount { get; protected set; } = 1;
 
-        public async override Task<Types.Variable> Exec(Browser.Browser Browser)
+        public async override Task<Types.Variable> Exec(CefPreter.IBrowser Browser)
         {
             Types.Variable res = null;
             if (Parameters[0].Type == CefType.NumberLiteral)
@@ -363,7 +318,7 @@ namespace CefPreter.Function
     {
         public override int ParamsCount { get; protected set; } = 1;
 
-        public async override Task<Types.Variable> Exec(Browser.Browser Browser)
+        public async override Task<Types.Variable> Exec(CefPreter.IBrowser Browser)
         {
             string xpath = "";
 
@@ -382,8 +337,20 @@ namespace CefPreter.Function
     {
         public override int ParamsCount { get; protected set; } = 0;
 
-        public async override Task<Types.Variable> Exec(Browser.Browser Browser)
+        public async override Task<Types.Variable> Exec(CefPreter.IBrowser Browser)
         {
+            return null;
+        }
+    }
+
+    public class Beep : Function
+    {
+        public override int ParamsCount { get; protected set; } = 0;
+
+        public async override Task<Types.Variable> Exec(CefPreter.IBrowser Browser)
+        {
+            System.Media.SoundPlayer snd = new System.Media.SoundPlayer("sounds/beep.wav");
+            snd.Play();
             return null;
         }
     }

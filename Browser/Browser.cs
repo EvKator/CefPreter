@@ -8,7 +8,7 @@ using CefSharp.Wpf;
 
 namespace CefPreter.Browser
 {
-    public class Browser
+    public class Browser: CefPreter.IBrowser
     {
         static bool Processing = false;
         public ChromiumWebBrowser Chromium { get; set; }

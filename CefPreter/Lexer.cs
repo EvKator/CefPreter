@@ -11,21 +11,18 @@ namespace CefPreter
     class Lexer////Translates code string to the list of tokens, represents a methods for manipulation with list of tokens
     {
         public List<Token> tokens { get; private set; }
-        
+
         public Lexer(string code)
         {
             string normalizedCode = NormalizeCode(code);
             List<string> types = new List<string>();
-            foreach (var assemblyName in Assembly.GetExecutingAssembly().GetReferencedAssemblies())
+
+            Assembly assembly = Assembly.Load("Function");
+            foreach (var type in assembly.GetTypes())
             {
-                Assembly assembly = Assembly.Load(assemblyName);
-                foreach (var type in assembly.GetTypes())
-                {
-                    if (type.Namespace == "CefPreter.Function")
-                        types.Add(type.Name);
-                }
+                types.Add(type.Name);
             }
-            
+
             Token.AddKeyWords(types.ToArray());
             this.tokens = ParseTokens(normalizedCode);
         }

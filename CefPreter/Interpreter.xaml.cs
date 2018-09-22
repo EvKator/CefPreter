@@ -190,6 +190,7 @@ namespace CefPreter
         public void Stop()
         {
             Processed = true;
+            Expressions.ForEach(ex => ex.Stop());
             Stopped();
         }
     }

@@ -9,6 +9,7 @@ namespace CefPreter
 {
     class Expression
     {
+        private bool stop = false;
         List<Function.Function> funcs;
         List<Expression> expressions;
 
@@ -51,7 +52,7 @@ namespace CefPreter
                 {
                     if (res == ExpressionResult.CondFalse)
                         continue;
-
+                    else if (stop) return ExpressionResult.Error;
                     else if (expressions[0].funcs[0].GetType().Name == "While")
                     {
                         if (await expressions[i].Execute(Browser, Memory, ceh, log) == ExpressionResult.WhileCondTrue)
@@ -74,6 +75,7 @@ namespace CefPreter
 
             foreach(Function.Function func in funcs.OrEmptyIfNull())
             {
+                if (stop) return ExpressionResult.Error;
                 if (func.GetType().Name == "CLBCK" && ceh != null)
                 {
                     ceh(Memory);
@@ -107,6 +109,11 @@ namespace CefPreter
                     log();
             }
             return res;
+        }
+
+        public void Stop()
+        {
+            stop = true;
         }
     }
 
