@@ -25,15 +25,19 @@ namespace CefPreter.Browser
 
             Processing = true;
             Chromium.Stop();
-            Chromium.Address = url;
-            Chromium.LoadingStateChanged += (sender, args) =>
+            if(Chromium.Address != url)
             {
-                if (args.IsLoading == false)
+                Chromium.Address = url;
+                Chromium.LoadingStateChanged += (sender, args) =>
                 {
-                    Processing = false;
-                }
-            };
-            await WaitForProcessing();
+                    if (args.IsLoading == false)
+                    {
+                        Processing = false;
+                    }
+                };
+                await WaitForProcessing();
+            }
+            
         }
 
         public async Task<JavascriptResponse> GetElementByXpath(string xpath)
@@ -63,8 +67,8 @@ namespace CefPreter.Browser
             {
                 await Task.Delay(interval);
                 timeout -= interval;
-                var el = GetElementByXpath(xpath);
-                if (el.Result != null)
+                string res = await GetInnerHTML(xpath);
+                if (res != null)
                     Processing = false;
             }
             if (timeout <= 0)

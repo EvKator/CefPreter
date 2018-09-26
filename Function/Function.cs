@@ -231,13 +231,19 @@ namespace CefPreter.Function
         {
             int n = 1000;
 
+            
+
+            string xpath = "";
+
             if (Parameters[0].Type == CefType.StringLiteral)
-                n = Convert.ToInt32(Parameters[0].Name);
+                xpath = Convert.ToString(Parameters[0].Name);
             else
-                throw new Exception("Can't convert " + Parameters[0].Type.ToString() + " to Number");
+                throw new Exception("Can't convert " + Parameters[0].Type.ToString() + " to StringLiteral");
 
-            await Browser.Wait(n);//////////////////////////////////////////////////////////////////////////////
+            await Browser.WaitForElement(xpath);
 
+            
+            
 
             return null;
         }

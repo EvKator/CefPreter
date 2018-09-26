@@ -53,7 +53,7 @@ namespace CefPreter
                     if (res == ExpressionResult.CondFalse)
                         continue;
                     else if (stop) return ExpressionResult.Error;
-                    else if (expressions[0].funcs[0].GetType().Name == "While")
+                    else if (expressions[i].funcs[0].GetType().Name == "While")
                     {
                         if (await expressions[i].Execute(Browser, Memory, ceh, log) == ExpressionResult.WhileCondTrue)
                         {
@@ -73,8 +73,9 @@ namespace CefPreter
 
                 }
 
-            foreach(Function.Function func in funcs.OrEmptyIfNull())
+            foreach(Function.Function f in funcs.OrEmptyIfNull())
             {
+                var func = f.Clone() as Function.Function;
                 if (stop) return ExpressionResult.Error;
                 if (func.GetType().Name == "CLBCK" && ceh != null)
                 {

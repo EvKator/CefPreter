@@ -8,9 +8,10 @@ using CefPreter.Exceptions;
 namespace CefPreter.Function
 {
 
-    public abstract class Function
+    public abstract class Function: ICloneable
     {
         private List<Token> _parameters;
+        public Token funcToken;
         public List<Token> Parameters
         {
             get
@@ -43,6 +44,7 @@ namespace CefPreter.Function
                 throw new Exception("Wrong params number");
             this.Parameters = Parameters;
         }
+        
 
         public Function() { }
 
@@ -53,8 +55,15 @@ namespace CefPreter.Function
             System.Reflection.Assembly asm = System.Reflection.Assembly.Load("Function");
             Type type = asm.GetType("CefPreter.Function." + funcToken.Name);
             object f = Activator.CreateInstance(type);
+            (f as Function).funcToken = funcToken;
             return f as Function;
         }
-        
+
+        public object Clone()
+        {
+            var f = Function.Create(funcToken);
+            f.Parameters = this.Parameters;
+            return f;
+        }
     }
 }
