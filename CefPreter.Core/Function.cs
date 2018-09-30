@@ -22,7 +22,7 @@ namespace CefPreter.Function
             {
                 if (value.Count != this.ParamsCount && ParamsCount != -1)
                 {
-                    throw new WrongParamsCountException();
+                    throw new CefParamsCountException();
                 }
                 else
                 {
@@ -41,7 +41,7 @@ namespace CefPreter.Function
         public Function(List<Token> Parameters)
         {
             if (ParamsCount != -1 && ParamsCount != Parameters.Count)
-                throw new Exception("Wrong params number");
+                throw new CefParamsCountException("Wrong params count");
             this.Parameters = Parameters;
         }
         

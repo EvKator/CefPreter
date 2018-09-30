@@ -27,7 +27,7 @@ namespace CefPreter
                     int i0 = tokens.IndexOf(token.Current);
                     var nTokens = tokens.GetRange(i0 + 1, tokens.FindLastIndex(t => t.Type == CefType.End) - i0 - 1);
                     var expressions = Parser.ParseExpressions(nTokens, CefType.End);
-                    Expressions.Add(new Expression(expressions));
+                    Expressions.Add(new ComplexExpression(expressions));
                     try
                     {
 

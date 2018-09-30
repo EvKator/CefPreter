@@ -86,7 +86,20 @@ namespace CefPreter
         {
             variables.Remove(variables.Find(el => el.Name == Name));
         }
-        
+
+        public void Remove(string Name, bool ignnoreErrors)
+        {
+            try
+            {
+                variables.Remove(variables.Find(el => el.Name == Name));
+            }
+            catch (Exception ex)
+            {
+                if (ignnoreErrors == false)
+                    throw ex;
+            }
+        }
+
         public Types.Variable Get(string Name)
         {
             return variables[GetVariableIndex(Name)];

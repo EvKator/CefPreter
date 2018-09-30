@@ -95,6 +95,10 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
+    <Compile Include="ComplexExpression.cs" />
+    <Compile Include="ExpressionResult.cs" />
+    <Compile Include="CefExtensions.cs" />
+    <Compile Include="FunctionsExpression.cs" />
     <Compile Include="Interpreter.xaml.cs">
       <DependentUpon>Interpreter.xaml</DependentUpon>
       <SubType>Code</SubType>

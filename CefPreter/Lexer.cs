@@ -8,13 +8,14 @@ using System.Reflection;
 
 namespace CefPreter
 {
-    class Lexer////Translates code string to the list of tokens, represents a methods for manipulation with list of tokens
+    public class Lexer////Translates code string to the list of tokens, represents a methods for manipulation with list of tokens
     {
         public List<Token> tokens { get; private set; }
+        public string code { get; private set; }
 
         public Lexer(string code)
         {
-            string normalizedCode = NormalizeCode(code);
+            this.code = NormalizeCode(code);
             List<string> types = new List<string>();
 
             Assembly assembly = Assembly.Load("Function");
@@ -24,12 +25,21 @@ namespace CefPreter
             }
 
             Token.AddKeyWords(types.ToArray());
-            this.tokens = ParseTokens(normalizedCode);
+            this.tokens = ParseTokens(this.code);
         }
 
-        public string NormalizeCode(string code)
+        private string NormalizeCode(string code)
         {
             code = code.Replace(";", " ; ").Replace("\n", " ").Replace("\r", " ").Replace("\t", " ");
+
+            MatchCollection matches = Regex.Matches(code, "'.*?'");
+            code = Regex.Replace(code, "('(.*?)')", (e) => { string res = e.Groups[2].Value; while (res.Contains(" ")) res = res.Replace(" ", "∏"); return "'" + res + "'"; });
+            //List<string>
+            
+            for(int i = 0; i < matches.Count; i++)
+            {
+
+            }
 
             while (code.Contains("  ")) { code = code.Replace("  ", " "); }
             return code;
@@ -47,7 +57,7 @@ namespace CefPreter
                 if (!String.IsNullOrWhiteSpace(sToken))
                 {
 
-                    while (stok.Contains("_")) { stok = stok.Replace("_", " "); }
+                    while (stok.Contains("∏")) { stok = stok.Replace("∏", " "); }
 
                     token = new Token(stok);
                 }

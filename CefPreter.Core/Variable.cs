@@ -8,9 +8,9 @@ namespace CefPreter.Types
 {
     public abstract class Variable
     {
-        public string Name { get; private set; }
-        public CefType Type { get; private set; }
-        public string Value { get; set; }  = "Variable";
+        public virtual string Name { get; }
+        public virtual CefType Type { get;  }
+        public abstract object Value { get; set; } 
         public Variable(string Name, CefType type)
         {
             this.Name = Name;
@@ -27,18 +27,7 @@ namespace CefPreter.Types
             return new String(Name, Value);
         }
 
-        public static explicit operator Token(Variable var)
-        {
-            Token token;
-            if (var.Type == CefType.String)
-                token = new Token(((String)var).Value, CefType.StringLiteral);
-            else if (var.Type == CefType.Number)
-                token = new Token(((Number)var).Value.ToString(), CefType.NumberLiteral);
-            else
-                throw new NotImplementedException();
-            return token;
-        }
-
+        
 
         public virtual Variable ToStr()
         {
@@ -72,11 +61,13 @@ namespace CefPreter.Types
             return res;
         }
 
-        public new string Value { get; set; }
+        public override object Value { get; set; }
         public String(string Name, string Value = "") : base(Name, CefType.String)
         {
             this.Value = Value;
         }
+
+        
 
         public override Variable ToStr()
         {
@@ -96,25 +87,8 @@ namespace CefPreter.Types
             return res;
         }
 
-        public new int Value { get;set; }
+        public override object Value { get;set; }
         public Number(string Name, int Value = 0) : base(Name, CefType.Number)
-        {
-            this.Value = Value;
-        }
-        public override Variable ToStr()
-        {
-            return new String(this.Name, this.Value.ToString());
-        }
-        public override string ToString()
-        {
-            return string.Format("{0}: {1}", this.Name, this.Value);
-        }
-    }
-
-    public class UFunc : Variable
-    {
-        public new int Value { get; set; }
-        public UFunc(string Name, int Value = 0) : base(Name, CefType.Number)
         {
             this.Value = Value;
         }

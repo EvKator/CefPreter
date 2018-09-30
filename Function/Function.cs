@@ -8,6 +8,7 @@ using CefPreter.Exceptions;
 using CefPreter.Browser;
 using System.Reflection;
 using CefPreter.Function;
+using System.Text.RegularExpressions;
 
 namespace CefPreter.Function
 {
@@ -17,7 +18,7 @@ namespace CefPreter.Function
     {
         public override int ParamsCount { get; protected set; } = -1;
 
-        public async override Task<Types.Variable> Exec(CefPreter.IBrowser Browser)
+        public async override Task<Types.Variable> Exec(CefPreter.IBrowser Browser = null)
         {
             string message = "";
             foreach (var parameter in Parameters)
@@ -25,7 +26,7 @@ namespace CefPreter.Function
                 if (parameter.Type == CefType.StringLiteral)
                     message += parameter.Name;
                 else
-                    throw new Exception("Can't convert " + parameter.Type + " to String");
+                    throw new CefTypeException("Can't convert " + parameter.Type + " to String");
             }
 
             return Types.Variable.Create(this.GetType().Name, message);
@@ -36,10 +37,10 @@ namespace CefPreter.Function
     {
         public override int ParamsCount { get; protected set; } = 2;
 
-        public async override Task<Types.Variable> Exec(CefPreter.IBrowser Browser)
+        public async override Task<Types.Variable> Exec(CefPreter.IBrowser Browser = null)
         {
             if (!(Parameters[1].Type == CefType.StringLiteral))
-                throw new Exception(Parameters[1].Name + " is not a string " + this.ToString());
+                throw new CefTypeException(Parameters[1].Name + " is not a string " + this.ToString());
 
             return Types.Variable.Create(Parameters[0].Name, Parameters[1].Name);
 
@@ -49,11 +50,11 @@ namespace CefPreter.Function
     public class ANumber : Function
     {
         public override int ParamsCount { get; protected set; } = 2;
-        public async override Task<Types.Variable> Exec(CefPreter.IBrowser Browser)
+        public async override Task<Types.Variable> Exec(CefPreter.IBrowser Browser = null)
         {
 
             if (!Parameters[1].IsNumberLiteral())
-                throw new Exception(Parameters[1].Name + " is not a number " + this.ToString());
+                throw new CefTypeException(Parameters[1].Name + " is not a number " + this.ToString());
 
             return Types.Variable.Create(Parameters[0].Name, Convert.ToInt32(Parameters[1].Name));
 
@@ -64,47 +65,126 @@ namespace CefPreter.Function
     {
         public override int ParamsCount { get; protected set; } = 1;
 
-        public async override Task<Types.Variable> Exec(CefPreter.IBrowser Browser)
+        public async override Task<Types.Variable> Exec(CefPreter.IBrowser Browser = null)
         {
             Types.Variable result = null;
-            if (Parameters[0].Type == CefType.NumberLiteral)
+            if (Parameters[0].Type == CefType.NumberLiteral || Parameters[0].Type == CefType.StringLiteral)
                 result = new Types.String(this.GetType().Name, Parameters[0].ToString());
             else
-                throw new Exception("Can't convert " + Parameters[0].Type.ToString() + " to String");
+                throw new CefTypeException("Can't convert " + Parameters[0].Type.ToString() + " to String");
+
+            return result;
+        }
+    }
+
+    public class ToNumber : Function
+    {
+        public override int ParamsCount { get; protected set; } = 1;
+
+        public async override Task<Types.Variable> Exec(CefPreter.IBrowser Browser = null)
+        {
+            Types.Variable result = null;
+            if (Parameters[0].Type == CefType.StringLiteral)
+            {
+                string a = Regex.Match(Parameters[0].ToString() , @"(\d+)").Groups[1].Value ;
+                int r = Convert.ToInt32(a);
+                result = new Types.Number(this.GetType().Name, r);
+            }
+            else if(Parameters[0].Type == CefType.NumberLiteral)
+                result = new Types.Number(this.GetType().Name, Convert.ToInt32(Parameters[0]));
+            else
+                throw new CefTypeException("Can't convert " + Parameters[0].Type.ToString() + " to String");
+
+            return result;
+        }
+    }
+
+    public class IsGreater : Function
+    {
+        public override int ParamsCount { get; protected set; } = 2;
+
+        public async override Task<Types.Variable> Exec(CefPreter.IBrowser Browser = null)
+        {
+            Types.Variable result = null;
+            if (Parameters[0].Type == CefType.NumberLiteral && Parameters[1].Type == CefType.NumberLiteral)
+            {
+                if (Convert.ToInt32(Parameters[0].Name) >  Convert.ToInt32(Parameters[1].Name))
+                    result = new Types.Number(this.GetType().Name, 1);
+                else
+                    result = new Types.Number(this.GetType().Name, 0);
+            }
+            else if (Parameters[0].Type == CefType.StringLiteral && Parameters[1].Type == CefType.StringLiteral)
+            {
+                if(String.Compare(Parameters[0].Name, Parameters[1].Name) > 0)
+                    result = new Types.Number(this.GetType().Name, 1);
+                else
+                    result = new Types.Number(this.GetType().Name, 0);
+
+            }
+                
+            else
+                throw new CefTypeException("Can't convert " + Parameters[0].Type.ToString() + " to String");
 
             return result;
         }
     }
 
 
-    public class UserFunction : Function
+    public class IsLess : Function
     {
-        public override int ParamsCount { get; protected set; } = 1;
-        public async override Task<Types.Variable> Exec(CefPreter.IBrowser Browser)
+        public override int ParamsCount { get; protected set; } = 2;
+
+        public async override Task<Types.Variable> Exec(CefPreter.IBrowser Browser = null)
         {
             Types.Variable result = null;
-            if (Parameters[0].Type == CefType.StringLiteral)
-                result = new Types.String(this.GetType().Name, Parameters[0].ToString());
+            if (Parameters[0].Type == CefType.NumberLiteral && Parameters[1].Type == CefType.NumberLiteral)
+            {
+                if (Convert.ToInt32(Parameters[0].Name) < Convert.ToInt32(Parameters[1].Name))
+                    result = new Types.Number(this.GetType().Name, 1);
+                else
+                    result = new Types.Number(this.GetType().Name, 0);
+            }
+            else if (Parameters[0].Type == CefType.StringLiteral && Parameters[1].Type == CefType.StringLiteral)
+            {
+                if (String.Compare(Parameters[0].Name, Parameters[1].Name) < 0)
+                    result = new Types.Number(this.GetType().Name, 1);
+                else
+                    result = new Types.Number(this.GetType().Name, 0);
+
+            }
+
             else
-                throw new Exception("Can't convert " + Parameters[0].Type.ToString() + " to String");
+                throw new CefTypeException("Can't convert " + Parameters[0].Type.ToString() + " to String");
 
             return result;
         }
     }
 
-
-
-    public class Call : Function
+    public class AreEqual : Function
     {
-        public override int ParamsCount { get; protected set; } = 1;
+        public override int ParamsCount { get; protected set; } = 2;
 
-        public async override Task<Types.Variable> Exec(CefPreter.IBrowser Browser)
+        public async override Task<Types.Variable> Exec(CefPreter.IBrowser Browser = null)
         {
             Types.Variable result = null;
-            if (Parameters[0].Type == CefType.StringLiteral)
-                result = new Types.String(this.GetType().Name, Parameters[0].ToString());
+            if (Parameters[0].Type == CefType.NumberLiteral && Parameters[1].Type == CefType.NumberLiteral)
+            {
+                if (Convert.ToInt32(Parameters[0].Name) == Convert.ToInt32(Parameters[1].Name))
+                    result = new Types.Number(this.GetType().Name, 1);
+                else
+                    result = new Types.Number(this.GetType().Name, 0);
+            }
+            else if (Parameters[0].Type == CefType.StringLiteral && Parameters[1].Type == CefType.StringLiteral)
+            {
+                if (String.Compare(Parameters[0].Name, Parameters[1].Name) == 0)
+                    result = new Types.Number(this.GetType().Name, 1);
+                else
+                    result = new Types.Number(this.GetType().Name, 0);
+
+            }
+
             else
-                throw new Exception("Can't convert " + Parameters[0].Type.ToString() + " to String");
+                throw new CefTypeException("Can't convert " + Parameters[0].Type.ToString() + " to String");
 
             return result;
         }
@@ -122,7 +202,7 @@ namespace CefPreter.Function
             if (Parameters[0].Type == CefType.StringLiteral)
                 url = Parameters[0].Name;
             else
-                throw new Exception("Can't convert " + Parameters[0].Type.ToString() + " to String");
+                throw new CefTypeException("Can't convert " + Parameters[0].Type.ToString() + " to String");
             var result = new Types.String(this.GetType().Name, url);
             await Browser.Navigate(url);//////////////////////////////////////////////////////////////////////////////
 
@@ -141,7 +221,7 @@ namespace CefPreter.Function
             if (Parameters[0].Type == CefType.StringLiteral)
                 url = Parameters[0].Name;
             else
-                throw new Exception("Can't convert " + Parameters[0].Type.ToString() + " to String");
+                throw new CefTypeException("Can't convert " + Parameters[0].Type.ToString() + " to String");
             var result = new Types.String(this.GetType().Name, url);
             await Browser.Click(url);
             return result;
@@ -158,13 +238,13 @@ namespace CefPreter.Function
             if (Parameters[0].Type == CefType.StringLiteral)
                 xpath = Parameters[0].Name;
             else
-                throw new Exception("Can't convert " + Parameters[0].Type.ToString() + " to String");
+                throw new CefTypeException("Can't convert " + Parameters[0].Type.ToString() + " to String");
 
             string text = "";
             if (Parameters[1].Type == CefType.StringLiteral)
                 text = Parameters[1].Name;
             else
-                throw new Exception("Can't convert " + Parameters[1].Type.ToString() + " to String");
+                throw new CefTypeException("Can't convert " + Parameters[1].Type.ToString() + " to String");
 
 
             var result = new Types.String(this.GetType().Name, xpath);
@@ -216,7 +296,7 @@ namespace CefPreter.Function
             if (Parameters[0].Type == CefType.NumberLiteral)
                 n = Convert.ToInt32(Parameters[0].Name);
             else
-                throw new Exception("Can't convert " + Parameters[0].Type.ToString() + " to Number");
+                throw new CefTypeException("Can't convert " + Parameters[0].Type.ToString() + " to Number");
 
             await Browser.Wait(n);
             return null;
@@ -238,7 +318,7 @@ namespace CefPreter.Function
             if (Parameters[0].Type == CefType.StringLiteral)
                 xpath = Convert.ToString(Parameters[0].Name);
             else
-                throw new Exception("Can't convert " + Parameters[0].Type.ToString() + " to StringLiteral");
+                throw new CefTypeException("Can't convert " + Parameters[0].Type.ToString() + " to StringLiteral");
 
             await Browser.WaitForElement(xpath);
 
@@ -253,7 +333,7 @@ namespace CefPreter.Function
     {
         public override int ParamsCount { get; protected set; } = 1;
 
-        public async override Task<Types.Variable> Exec(CefPreter.IBrowser Browser)
+        public async override Task<Types.Variable> Exec(CefPreter.IBrowser Browser = null)
         {
             Types.Variable res = null;
             if (Parameters[0].Type == CefType.NumberLiteral)
@@ -277,7 +357,7 @@ namespace CefPreter.Function
                     res = res = Types.Variable.Create(this.GetType().Name, 1);
             }
             else
-                throw new Exception(Parameters[0].Name + " is not a number/string " + this.ToString());
+                throw new CefTypeException(Parameters[0].Name + " is not a number/string " + this.ToString());
 
             return res;
 
@@ -288,7 +368,7 @@ namespace CefPreter.Function
     {
         public override int ParamsCount { get; protected set; } = 1;
 
-        public async override Task<Types.Variable> Exec(CefPreter.IBrowser Browser)
+        public async override Task<Types.Variable> Exec(CefPreter.IBrowser Browser = null)
         {
             Types.Variable res = null;
             if (Parameters[0].Type == CefType.NumberLiteral)
@@ -312,7 +392,7 @@ namespace CefPreter.Function
                     res = res = Types.Variable.Create(this.GetType().Name, 1);
             }
             else
-                throw new Exception(Parameters[0].Name + " is not a number/string " + this.ToString());
+                throw new CefTypeException(Parameters[0].Name + " is not a number/string " + this.ToString());
 
             return res;
 
@@ -331,7 +411,7 @@ namespace CefPreter.Function
             if (Parameters[0].Type == CefType.StringLiteral)
                 xpath = Convert.ToString(Parameters[0].Name);
             else
-                throw new Exception("Can't convert " + Parameters[0].Type.ToString() + " to StringLiteral");
+                throw new CefTypeException("Can't convert " + Parameters[0].Type.ToString() + " to StringLiteral");
 
             string res = await Browser.GetInnerHTML(xpath);
 
@@ -343,7 +423,7 @@ namespace CefPreter.Function
     {
         public override int ParamsCount { get; protected set; } = 0;
 
-        public async override Task<Types.Variable> Exec(CefPreter.IBrowser Browser)
+        public async override Task<Types.Variable> Exec(CefPreter.IBrowser Browser = null)
         {
             return null;
         }
@@ -353,7 +433,7 @@ namespace CefPreter.Function
     {
         public override int ParamsCount { get; protected set; } = 0;
 
-        public async override Task<Types.Variable> Exec(CefPreter.IBrowser Browser)
+        public async override Task<Types.Variable> Exec(CefPreter.IBrowser Browser = null)
         {
             System.Media.SoundPlayer snd = new System.Media.SoundPlayer("sounds/beep.wav");
             snd.Play();

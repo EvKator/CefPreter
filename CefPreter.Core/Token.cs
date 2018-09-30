@@ -12,10 +12,24 @@ namespace CefPreter
         public CefType _Type;
         static string[] funcKeyWords;
 
+        public static explicit operator Token(CefPreter.Types.Variable var)
+        {
+            Token token;
+            if (var.Type == CefType.String)
+                token = new Token((string)var.Value, CefType.StringLiteral);
+            else if (var.Type == CefType.Number)
+                token = new Token(((int)var.Value).ToString(), CefType.NumberLiteral);
+            else
+                throw new NotImplementedException();
+            return token;
+        }
+
         public static void AddKeyWords(string[] keyWords)
         {
             funcKeyWords = keyWords;
         }
+
+
 
         public CefType Type
         {
@@ -43,9 +57,9 @@ namespace CefPreter
                         return CefType.End;
                     else if (IsFunction(Name))
                         return CefType.Function;
-                        ////OBLIGATORILY LAST!!!
+                    ////OBLIGATORILY LAST!!!
                     else if (IsVariable())
-                            return CefType.Variable;
+                        return CefType.Variable;
                     throw new Exception("Unknown token " + Name);
                 }
                 else
@@ -59,9 +73,9 @@ namespace CefPreter
 
         private bool IsFunction(string Name)
         {
-            if(funcKeyWords.Contains(Name))
-            //System.Reflection.Assembly funcs = System.Reflection.Assembly.Load("Function.dll");
-            
+            if (funcKeyWords.Contains(Name))
+                //System.Reflection.Assembly funcs = System.Reflection.Assembly.Load("Function.dll");
+
                 return true;
             else
                 return false;
@@ -92,11 +106,11 @@ namespace CefPreter
         {
             return this.Name;// String.Format("{0}", this.Value);
         }
-        
+
 
         public bool IsStringLiteral()
         {
-            return Name.Length > 0 ? Name[0] == '\'': false;
+            return Name.Length > 0 ? Name[0] == '\'' : false;
         }
 
         public bool IsNumberLiteral()
@@ -118,8 +132,10 @@ namespace CefPreter
                 Type == CefType.Function
                 ;
         }
-        
+
     }
+
+   
 
     
 
